@@ -1,17 +1,22 @@
 #Window variables
-width_windows = 600
-height_windows = 600
+width_windows = 500
+height_windows = 500
 
 #Prey Variables
-speed_prey = 60
+speed_prey = 50
+size_prey = 50 
 
 
 #Predator Variables
 #Traps Variables
+
 #Environment Variables
 
+
 #Elements Variables
-width_element = 60
-height_element = 60
+width_element = 50
+height_element = 50
+limit_y = height_windows-height_element 
+limit_x = width_windows-width_element
 color_back = (0,0,20) #Color of window
-FPS = 20 #Frames per second
+FPS = 10 #Frames per second

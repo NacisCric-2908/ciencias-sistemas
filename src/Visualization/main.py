@@ -2,10 +2,6 @@ import pygame
 import constant_variables
 from Agent import Agent
 
-#Creating the agent
-prey1 = Agent(30,30)
-prey2 = Agent(90,30)
-
 #Start the game
 pygame.init() 
 
@@ -14,6 +10,18 @@ window = pygame.display.set_mode((constant_variables.width_windows,constant_vari
 
 #Put a the name
 pygame.display.set_caption("Prey Depredator")
+
+#Is a array of images
+animation = []
+for i in range (7):
+    #Insert an image, searching relative path
+    img = pygame.image.load(f"src/Visualization/assets/images/prey/Prey_{i}.png" )
+    img = pygame.transform.scale(img, (50,50)) #Change image size
+    animation.append(img) #Save all images
+
+#Creating the agent, receive initial (x,y) and the array images
+prey1 = Agent(25,25, animation)
+#prey2 = Agent(90,30)
 
 #variables moves prey
 move_up_prey = False
@@ -28,7 +36,7 @@ run = True
 
 while run: 
 
-    #Run at 60 FPS
+    #Run at n FPS
     clock.tick(constant_variables.FPS)
 
 
@@ -50,11 +58,14 @@ while run:
 
     print(f"{delta_x_prey},{delta_y_prey}")
 
-    #Move the prey
+    #Move the prey, parameters coordinate now
     prey1.movement(delta_x_prey,delta_y_prey)
 
+    #Update the image
+    prey1.update() 
+
     prey1.draw(window, (255,255,0)) #Draw the prey in window
-    prey2.draw(window, (255,255,255)) #Draw the prey in window
+    #prey2.draw(window, (255,255,255)) #Draw the prey in window
    
     for event in pygame.event.get(): #Always run the game
         if event.type == pygame.QUIT: #Finish when close 
