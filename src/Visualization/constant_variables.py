@@ -6,8 +6,10 @@ height_windows = 500
 speed_prey = 50
 size_prey = 50 
 
-
 #Predator Variables
+speed_predator = 50
+size_predator = 50 
+
 #Traps Variables
 
 #Environment Variables
