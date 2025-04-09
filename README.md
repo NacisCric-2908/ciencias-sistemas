@@ -1,5 +1,8 @@
 # Workshop 1: Predator-Prey Autonomous Adaptive Agent System Design
 
+**Document versions:**
+- [Download PDF version](docs/Workshop_1.pdf)
+
 **Authors:**  
 Juan Diego Grajales Castillo - 20221020128  
 Nicolas Castro Rivera - 20221020055  
