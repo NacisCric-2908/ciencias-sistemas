@@ -55,19 +55,19 @@ Nicolas Castro Rivera - 20221020055
 **Action:** Prey flees by evading traps.  
 **Adaptation goal:** Improve evasion strategies using the characteristics of the environment.
 
-![High level architecture Component diagram](docker_diagram.png)
+![High level architecture Component diagram](docs/docker_diagram.png)
 
 ## Feedback Loops
 
 **Predator loop:**  
 **Input:** Prey location → **Process:** Adjust chase strategy → **Output:** Capture success rate → Update strategy.
 
-![Predator feedback loop diagram](predator_diagram.png)
+![Predator feedback loop diagram](docs/predator_diagram.png)
 
 **Prey loop:**  
 **Input:** Predator proximity → **Process:** Modify avoidance tactic → **Output:** Survival rate → Update strategy.
 
-![Prey feedback loop diagram](prey_diagram.png)
+![Prey feedback loop diagram](docs/prey_diagram.png)
 
 ## Preliminary Implementation Outline Frameworks
 
