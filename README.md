@@ -4,8 +4,8 @@ This repository contains the design and implementation of an adaptive autonomous
 
 ## 📁 Contents
 
-- `Workshop_1.pdf`: System requirements and functional design document.
-- `Workshop_2.pdf`: Dynamic system analysis, mathematical modeling, simulation, and stability validation.
+- [Workshop_1.pdf](docs/workshop1/Workshop_1.pdf): System requirements and functional design document.
+- [Workshop_2.pdf](docs/workshop2/Workshop_2.pdf): Dynamic system analysis, mathematical modeling, simulation, and stability validation.
 - Source code (coming soon).
 - Simulation data and visualizations (optional).
 
