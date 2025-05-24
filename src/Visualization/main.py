@@ -1,6 +1,7 @@
 import pygame
 import constant_variables
 from Agent import Agent
+from Maze import Maze
 
 #Start the game
 pygame.init() 
@@ -26,6 +27,39 @@ for i in range (7):
     img_predator = pygame.image.load(f"src/Visualization/assets/images/predator/Predator_{i}.png" )
     img_predator = pygame.transform.scale(img_predator, (50,50)) #Change image size
     animation_predator.append(img_predator) #Save all images
+
+#Charge maze images
+tile_list = []
+for x in range(12):
+    tile_image = pygame.image.load(f"src/Visualization/assets/images/tiles/Tile ({x+1}).png")
+    tile_image = pygame.transform.scale(tile_image, (constant_variables.tile_size, constant_variables.tile_size)) #Change image size
+    tile_list.append(tile_image) #Save all images
+
+#Is a matrix of the maze/world
+world_data = [
+    [11,7,8,9,10,9,10,8,10,9],
+    [9,4,4,11,7,10,4,4,4,8],
+    [8,4,4,9,6,9,5,11,5,10],
+    [10,6,8,9,10,9,5,8,5,9],
+    [8,9,10,0,4,9,6,8,6,10],
+    [10,7,8,9,4,9,10,8,10,9],
+    [8,5,11,9,2,3,3,2,1,8],
+    [9,5,8,9,10,9,10,8,10,9],
+    [10,6,10,0,2,3,1,9,0,3],
+    [10,9,8,9,10,9,10,8,10,11]
+]
+
+#Create the maze
+maze = Maze()
+maze.process_data(world_data, tile_list) #Process the data of the maze
+
+
+#Creating the maze
+def draw_grid():
+    for x in range(10):
+        pygame.draw.line(window, (203,50,52), (x*constant_variables.tile_size, 0), (x*constant_variables.tile_size, constant_variables.height_windows))
+        pygame.draw.line(window, (203,50,52), (0, x*constant_variables.tile_size), (constant_variables.width_windows, x*constant_variables.tile_size))
+
 
 #Creating the agent, receive initial (x,y) and the array images
 prey1 = Agent(25,25, animation_prey)
@@ -53,9 +87,10 @@ while run:
     #Run at n FPS
     clock.tick(constant_variables.FPS)
 
-
     #Clean the movements
     window.fill(constant_variables.color_back)
+
+    draw_grid() #Draw the grid
 
     delta_x_prey = 0 #How many move in x
     delta_y_prey = 0 #How many move in y
@@ -84,6 +119,9 @@ while run:
         delta_y_predator = constant_variables.speed_predator #Take care with coordinates in pygame +down
 
     #print(f"{delta_x_prey},{delta_y_prey}")
+
+    #Draw the maze in window
+    maze.draw(window) 
 
     #Move the prey, parameters coordinate now
     prey1.movement(delta_x_prey,delta_y_prey)

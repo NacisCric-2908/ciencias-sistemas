@@ -10,10 +10,8 @@ size_prey = 50
 speed_predator = 50
 size_predator = 50 
 
-#Traps Variables
-
 #Environment Variables
-
+tile_size = 50 #Size of the tile
 
 #Elements Variables
 width_element = 50
