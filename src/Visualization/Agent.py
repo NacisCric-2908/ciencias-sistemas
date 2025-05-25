@@ -42,4 +42,7 @@ class Agent():
     #Show in the window
     def draw(self, window, color):
         window.blit(self.image, self.shape)
-        #pygame.draw.rect(window, color, self.shape, 1)
+        pygame.draw.rect(window, color, self.shape, 1)
+
+    def hitbox(self):
+        return self.shape

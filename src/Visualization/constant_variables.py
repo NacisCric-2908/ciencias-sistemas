@@ -12,7 +12,7 @@ size_predator = 50
 
 #Environment Variables
 tile_size = 50 #Size of the tile
-
+collision_tiles = [0, 1, 2, 3, 4, 5, 6, 7] #Tiles that are collisions of walls
 #Elements Variables
 width_element = 50
 height_element = 50

@@ -49,6 +49,22 @@ world_data = [
     [10,9,8,9,10,9,10,8,10,11]
 ]
 
+#Create the walls collisions
+collision_rects = []
+
+for y, row in enumerate(world_data):
+    for x, tile in enumerate(row):
+        if tile in constant_variables.collision_tiles: #If the tile is a collision tile
+            rect = pygame.Rect(x * constant_variables.tile_size, y * constant_variables.tile_size, constant_variables.tile_size, constant_variables.tile_size)
+            collision_rects.append(rect)
+
+#This function evaluate the collision of the agent with the walls
+def check_collision(agent_rect):
+    for rect in collision_rects:
+        if agent_rect.colliderect(rect):
+            return True
+    return False
+
 #Create the maze
 maze = Maze()
 maze.process_data(world_data, tile_list) #Process the data of the maze
@@ -124,10 +140,14 @@ while run:
     maze.draw(window) 
 
     #Move the prey, parameters coordinate now
-    prey1.movement(delta_x_prey,delta_y_prey)
+    print(f"Prey: {prey1.hitbox().move(delta_x_prey,delta_y_prey)}") #To show the steps
+    if not check_collision(prey1.hitbox().move(delta_x_prey,delta_y_prey)):
+        prey1.movement(delta_x_prey,delta_y_prey)
 
     #Move the predator, parameters coordinate now
-    predator1.movement(delta_x_predator,delta_y_predator)
+    if not check_collision(predator1.hitbox().move(delta_x_predator,delta_y_predator)):
+        predator1.movement(delta_x_predator,delta_y_predator)
+
 
     #Update the image
     prey1.update() 
