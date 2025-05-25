@@ -1,3 +1,1 @@
-.venv #This ignore things that not want commit
-src\Visualization\__pycache__
-C:\Users\Usuario\Desktop\Materias\Science System Foundations\Final Project\Visualization\ciencias-sistemas\.venv
+.venv 
