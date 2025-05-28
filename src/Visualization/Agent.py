@@ -11,6 +11,13 @@ class Agent():
         self.shape = pygame.Rect(0,0,constant_variables.height_element,constant_variables.width_element)
         self.shape.center = (x,y)
 
+        # Additional the state positions       
+        self.old_state_x = int((self.shape.x/constant_variables.size_prey)) #Uddate the state x positiion
+        self.old_state_y = int((self.shape.y/constant_variables.size_prey)) #Uddate the state y positiion
+        # New state positions
+        self.new_state_x = int((self.shape.x/constant_variables.size_prey)) #Uddate the state x positiion
+        self.new_state_y = int((self.shape.y/constant_variables.size_prey))
+
     def update(self):
         #The time to change the image
         cooldown_animation = 150
@@ -27,17 +34,11 @@ class Agent():
         #Update the image
         self.image = self.animation[self.frame_index]
 
-    #Change the coordinates for movement
     def movement(self, delta_x, delta_y ):
-        # Move in X only if the limits are not exceeded.
-        x = self.shape.x + delta_x
-        if 0 <= x <= constant_variables.limit_x:
-            self.shape.x = x
-
-        # Move in Y only if the limits are not exceeded.
-        y = self.shape.y + delta_y
-        if 0 <= y <= constant_variables.limit_y:
-            self.shape.y = y
+        raise NotImplementedError("Move like a prey or predator")
+    
+    def update_state(self,x,y):
+        raise NotImplementedError("Update state of prey or predator")
 
     #Show in the window
     def draw(self, window, color):
