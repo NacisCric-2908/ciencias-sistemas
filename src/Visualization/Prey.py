@@ -35,7 +35,7 @@ class Prey(Agent):
             self.new_state_y = int(self.old_state_y+(y/50))
 
         # Function that activates the prey sensor
-    def prey_sensor(self, grid, x, y):  # Parameters are x and y coordinates of the prey
+    def prey_sensor(self, grid_maze, grid_agents, x, y):  # Parameters are x and y coordinates of the prey
         # This sensor checks the surroundings of the prey
         directions = {  # Direction dictionary
             "right": (1, 0),
@@ -48,7 +48,7 @@ class Prey(Agent):
             "up_left": (-1, -1)
         }
 
-        print(grid[y][x])  # Debug print of current cell (optional)
+        print(grid_maze[y][x])  # Debug print of current cell (optional)
         
 
         for direction_name, (dx, dy) in directions.items():
@@ -58,20 +58,24 @@ class Prey(Agent):
                 ny = y + dy * paso  # New row
 
                 # Verify if the new coordinates are inside the maze
-                if 0 <= ny < len(grid) and 0 <= nx < len(grid[0]):
-                    valor = grid[ny][nx]
+                if 0 <= ny < len(grid_maze) and 0 <= nx < len(grid_maze[0]):
+                    valor = grid_maze[ny][nx]
                     if valor == 3:  # Wall
-                        print(f"There is a wall at [{nx}, {ny}] — vision blocked")
+                        print(f"Prey: There is a wall at [{nx}, {ny}] — vision blocked")
                         break
                     elif valor == 5:  # Path
+                        if grid_agents[ny][nx] == 2:  # There is a predator
+                            print(f"Prey: There is a predator at [{nx}, {ny}]")
+                            break                           
                         continue  # path is clear
                     elif valor == 4:  # Trap
-                        print(f"There is a trap at [{nx}, {ny}]")
-                    elif valor == 2:  # Predator
-                        print(f"There is a predator at [{nx}, {ny}]")
-                        break
+                        print(f"Prey: There is a trap at [{nx}, {ny}]")
+                        if grid_agents[ny][nx] == 2:  # There is a predator
+                            print(f"Prey: There is a Predator over trap at [{nx}, {ny}]")
+                            break
+                        continue
                     else:
-                        print(f"No vision at [{nx}, {ny}]")
+                        print(f"Prey: No vision at [{nx}, {ny}]")
                 else:
-                    print(f"Out of maze at [{nx}, {ny}]")
+                    print(f"Prey: Out of maze at [{nx}, {ny}]")
                     break

@@ -4,6 +4,7 @@ from Agent import Agent
 from Maze import Maze
 from Prey import Prey
 from Predator import Predator
+import numpy as np
 import random
 
 # Start the game
@@ -101,13 +102,16 @@ def create_game():
                 collision_rects.append(rect)
     maze = Maze()
     maze.process_data(world_data, tile_list)
+
     state_matrix = [[0 for _ in range(10)] for _ in range(10)]
+    agent_matrix = np.zeros_like(state_matrix)
+
     update_state_matrix_from_world(world_data, state_matrix)
-    state_matrix[9][0] = 1  # Prey
-    state_matrix[0][9] = 2  # Predator
+    agent_matrix[9][0] = 1  # Prey
+    agent_matrix[0][9] = 2  # Predator
     prey1 = Prey(25, 475, animation_prey)
     predator1 = Predator(475, 25, animation_predator)
-    return world_data, collision_rects, maze, state_matrix, prey1, predator1
+    return world_data, collision_rects, maze, state_matrix, agent_matrix , prey1, predator1
 
 def update_state_matrix_from_world(world_data, state_matrix):
     for y in range(len(world_data)):
@@ -120,9 +124,21 @@ def update_state_matrix_from_world(world_data, state_matrix):
             elif tile == 11:
                 state_matrix[y][x] = 4
 
+def update_agent_matrix(agent_matrix, x, y, new_x, new_y):
+    #Change states of the prey in the agent matrix
+    aux_value = agent_matrix[y][x] 
+    agent_matrix[y][x] = agent_matrix[new_y][new_x]   
+    agent_matrix[new_y][new_x] = aux_value 
+
 def print_state_matrix(state_matrix):
     print("Matriz de estado:")
     for row in state_matrix:
+        print(row)
+    print("-" * 40)
+
+def print_agent_matrix(agent_matrix):
+    print("Matriz de agentes:")
+    for row in agent_matrix:
         print(row)
     print("-" * 40)
 
@@ -140,8 +156,9 @@ def check_collision(agent_rect, collision_rects):
     return False
 
 # Initialize game
-world_data, collision_rects, maze, state_matrix, prey1, predator1 = create_game()
-prey1.prey_sensor(state_matrix, prey1.new_state_x, prey1.new_state_y)
+world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
+prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
 
 # Initialize movement flags
 move_right_prey = False
@@ -156,6 +173,11 @@ move_down_predator = False
 clock = pygame.time.Clock()
 run = True
 game_over = False
+
+###################################################
+print_state_matrix(state_matrix)
+print_agent_matrix(agent_matrix)
+###################################################
 
 while run:
     clock.tick(constant_variables.FPS)
@@ -180,13 +202,20 @@ while run:
         if not check_collision(prey1.hitbox().move(delta_x_prey, delta_y_prey), collision_rects):
             prey1.movement(delta_x_prey, delta_y_prey)
             if delta_x_prey != 0 or delta_y_prey != 0:
-                update_state_matrix_from_world(world_data, state_matrix)
-                prey1.prey_sensor(state_matrix, prey1.new_state_x, prey1.new_state_y)
+                update_agent_matrix(agent_matrix, prey1.old_state_x, prey1.old_state_y, prey1.new_state_x, prey1.new_state_y)
+                prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 print_state_matrix(state_matrix)
+                print_agent_matrix(agent_matrix)
+
 
         # Move predator
         if not check_collision(predator1.hitbox().move(delta_x_predator, delta_y_predator), collision_rects):
             predator1.movement(delta_x_predator, delta_y_predator)
+            if delta_x_predator != 0 or delta_y_predator != 0:
+                update_agent_matrix(agent_matrix, predator1.old_state_x, predator1.old_state_y, predator1.new_state_x, predator1.new_state_y)
+                predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                print_state_matrix(state_matrix)
+                print_agent_matrix(agent_matrix)
 
         # Check collision with predator
         if prey1.hitbox().colliderect(predator1.hitbox()):
@@ -224,8 +253,9 @@ while run:
             if event.key == pygame.K_UP: move_up_predator = True
             if event.key == pygame.K_DOWN: move_down_predator = True
             if event.key == pygame.K_r and game_over:
-                world_data, collision_rects, maze, state_matrix, prey1, predator1 = create_game()
-                prey1.prey_sensor(state_matrix, prey1.new_state_x, prey1.new_state_y)
+                world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
+                prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 game_over = False
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a: move_left_prey = False
