@@ -9,11 +9,14 @@ size_prey = 50
 #Predator Variables
 speed_predator = 50
 size_predator = 50 
+speed_increase = 25
 
 #Environment Variables
 tile_size = 50 #Size of the tile
 collision_tiles = [0, 1, 2, 3, 4, 5, 6, 7] #Tiles that are collisions of walls
+
 #Elements Variables
+element_side = 50
 width_element = 50
 height_element = 50
 limit_y = height_windows-height_element 

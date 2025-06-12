@@ -88,7 +88,7 @@ def randomize_traps(world_data):
         for x, y in new_trap_positions:
             world_data[y][x] = 11
     else:
-        print("No se pudo colocar todas las trampas respetando las restricciones.")
+        print("Can't put the traps correctly.")
 
 def create_game():
     world_data = [row.copy() for row in initial_world_data]
@@ -130,7 +130,20 @@ def update_agent_matrix(agent_matrix, x, y, new_x, new_y):
     agent_matrix[y][x] = agent_matrix[new_y][new_x]   
     agent_matrix[new_y][new_x] = aux_value 
 
-def print_state_matrix(state_matrix):
+def update_agent_matrix_fast(agent_matrix): #Update the matrix when Predator is in mode Hunting
+    agent_matrix[predator1.new_state_y][predator1.new_state_x] = 0 
+    agent_matrix[predator1.hunt1_old_state_y][predator1.hunt1_old_state_x] = 0
+    agent_matrix[predator1.hunt2_old_state_y][predator1.hunt2_old_state_x] = 0
+    agent_matrix[predator1.hunt1_new_state_y][predator1.hunt1_new_state_x] = 2
+    agent_matrix[predator1.hunt2_new_state_y][predator1.hunt2_new_state_x] = 2
+
+def update_agent_matrix_adjust(agent_matrix): #Update the matrix when Predator need adjusting
+    agent_matrix[predator1.hunt1_new_state_y][predator1.hunt1_new_state_x] = 0
+    agent_matrix[predator1.hunt2_new_state_y][predator1.hunt2_new_state_x] = 0
+    agent_matrix[predator1.new_state_y][predator1.new_state_x] = 2
+    predator1.adjusting = False
+
+def print_state_matrix(state_matrix): 
     print("Matriz de estado:")
     for row in state_matrix:
         print(row)
@@ -158,7 +171,7 @@ def check_collision(agent_rect, collision_rects):
 # Initialize game
 world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
-predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
 
 # Initialize movement flags
 move_right_prey = False
@@ -183,7 +196,7 @@ while run:
     clock.tick(constant_variables.FPS)
     window.fill(constant_variables.color_back)
     draw_grid()
-
+    
     # Draw maze
     maze.draw(window)
 
@@ -199,24 +212,145 @@ while run:
         if move_down_predator: delta_y_predator = constant_variables.speed_predator
 
         # Move prey
-        if not check_collision(prey1.hitbox().move(delta_x_prey, delta_y_prey), collision_rects):
+        if not check_collision(prey1.hitbox().move(delta_x_prey, delta_y_prey), collision_rects): #Not move in collisions
             prey1.movement(delta_x_prey, delta_y_prey)
             if delta_x_prey != 0 or delta_y_prey != 0:
                 update_agent_matrix(agent_matrix, prey1.old_state_x, prey1.old_state_y, prey1.new_state_x, prey1.new_state_y)
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 print_state_matrix(state_matrix)
                 print_agent_matrix(agent_matrix)
+                
+        # Move predator 
+        collision_x, collision_y = delta_x_predator, delta_y_predator 
+
+        if delta_x_predator != 0 or delta_y_predator != 0: #Only moves (50,0)(-50,0)(0,-50)(0,50)
+            if predator1.hunting: #If hunting the move is + 25, moves (75,0)(-75,0)(0,-75)(0,75)
+                if delta_x_predator > delta_y_predator and delta_y_predator == 0: #Move right
+                    collision_x = delta_x_predator + constant_variables.speed_increase
+                if delta_x_predator < delta_y_predator and delta_y_predator == 0: #Move left
+                    collision_x = delta_x_predator-constant_variables.speed_increase
+                if delta_y_predator > delta_x_predator and delta_x_predator == 0: #Move down
+                    collision_y = delta_y_predator+constant_variables.speed_increase
+                if delta_y_predator < delta_x_predator and delta_x_predator == 0: #Move up
+                    collision_y = delta_y_predator-constant_variables.speed_increase
+
+            #Check if collision with walls
+            collision, distance, direction = predator1.check_collision_not_zero(predator1.hitbox(), predator1.hitbox().move(collision_x, collision_y), collision_rects)
+            
+            #Check if collision with maze borders
+            collision_border, distance_border, direction_border = predator1.check_border_collision(predator1.hitbox(), predator1.hitbox().move(collision_x, collision_y))
+            
+            if not collision_border:
+                if not collision: 
+                    
+                    predator1.movement(delta_x_predator, delta_y_predator)
+                    
+                    if predator1.move: #Special case, not move descentralized. 
+                        if predator1.hunting: 
+                            update_agent_matrix_fast(agent_matrix)
+                        else:
+                            if predator1.adjusting:
+                                update_agent_matrix_adjust(agent_matrix)
+                            else: 
+                                predator1.transition_normal_fast()
+                                update_agent_matrix(agent_matrix, predator1.old_state_x, predator1.old_state_y, predator1.new_state_x, predator1.new_state_y)
+
+                        prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                        predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                        print_state_matrix(state_matrix)
+                        print_agent_matrix(agent_matrix)
+                        
+                    
+                    else:
+                        print("[Don´t move]")
+                        predator1.move = True
+                    
+                else:
+                    if distance == 0:
+                        print("[Collision]?", collision)
+                        print_state_matrix(state_matrix)
+                        print_agent_matrix(agent_matrix)
 
 
-        # Move predator
-        if not check_collision(predator1.hitbox().move(delta_x_predator, delta_y_predator), collision_rects):
-            predator1.movement(delta_x_predator, delta_y_predator)
-            if delta_x_predator != 0 or delta_y_predator != 0:
-                update_agent_matrix(agent_matrix, predator1.old_state_x, predator1.old_state_y, predator1.new_state_x, predator1.new_state_y)
-                predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
-                print_state_matrix(state_matrix)
-                print_agent_matrix(agent_matrix)
+                    elif distance == 25:
+                        predator1.adjust_movement_collision(collision_x, collision_y, distance)
+                        update_agent_matrix_adjust(agent_matrix)
+                        predator1.transition_normal_fast()
+                        prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                        predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                        print_state_matrix(state_matrix)
+                        print_agent_matrix(agent_matrix)
 
+                    elif distance == 50:
+                        
+                        if predator1.adjusting and collision_y != 0 and predator1.shape.x%50!=0: 
+                            print("Don´t move")
+                            predator1.move = False
+
+                        if predator1.adjusting and collision_x != 0 and predator1.shape.y%50!=0:
+                            print("Don´t move")
+                            predator1.move = False
+
+                        if predator1.adjusting and collision_x != 0 and predator1.shape.x%50!=0:
+                            predator1.adjust_movement_collision(collision_x, collision_y, distance)
+                            update_agent_matrix_adjust(agent_matrix)
+                            predator1.transition_normal_fast()
+                            prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                            predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            print_state_matrix(state_matrix)
+                            print_agent_matrix(agent_matrix)
+                            
+                        if predator1.adjusting and collision_y != 0 and predator1.shape.y%50!=0: 
+                            predator1.adjust_movement_collision(collision_x, collision_y, distance)
+                            update_agent_matrix_adjust(agent_matrix)
+                            predator1.transition_normal_fast()
+                            prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                            predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            print_state_matrix(state_matrix)
+                            print_agent_matrix(agent_matrix)
+
+                        if not predator1.adjusting and predator1.shape.y%50==0 and predator1.shape.x%50==0 :
+                            predator1.adjust_movement_collision(collision_x, collision_y, distance)
+                            update_agent_matrix_adjust(agent_matrix)
+                            predator1.transition_normal_fast()
+                            prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                            predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            print_state_matrix(state_matrix)
+                            print_agent_matrix(agent_matrix)
+
+                    else:
+                        print("Debug")
+
+            else: 
+                if distance_border == 0:
+                    print("[Collision border]?", collision_border)
+                    print_state_matrix(state_matrix)
+                    print_agent_matrix(agent_matrix)
+
+                elif distance_border == 25:
+                    predator1.adjust_movement_collision(collision_x, collision_y, distance_border)
+                    update_agent_matrix_adjust(agent_matrix)
+                    predator1.transition_normal_fast()
+                    prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                    predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+
+                    print_state_matrix(state_matrix)
+                    print_agent_matrix(agent_matrix)
+
+                elif distance_border == 50:
+
+                    predator1.adjust_movement_collision(collision_x, collision_y, distance_border)
+                    update_agent_matrix_adjust(agent_matrix)
+                    predator1.transition_normal_fast()
+                    prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
+                    predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                    print_state_matrix(state_matrix)
+                    print_agent_matrix(agent_matrix)
+                else:
+                    print("Debug")
+                    
+        
         # Check collision with predator
         if prey1.hitbox().colliderect(predator1.hitbox()):
             game_over = True
@@ -243,20 +377,33 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        
+        
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a: move_left_prey = True
-            if event.key == pygame.K_d: move_right_prey = True
-            if event.key == pygame.K_w: move_up_prey = True
-            if event.key == pygame.K_s: move_down_prey = True
-            if event.key == pygame.K_LEFT: move_left_predator = True
-            if event.key == pygame.K_RIGHT: move_right_predator = True
-            if event.key == pygame.K_UP: move_up_predator = True
-            if event.key == pygame.K_DOWN: move_down_predator = True
+            # PRESA: Solo una dirección a la vez
+            if event.key in [pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d]:
+                move_up_prey = move_down_prey = move_left_prey = move_right_prey = False
+                if event.key == pygame.K_a: move_left_prey = True
+                elif event.key == pygame.K_d: move_right_prey = True
+                elif event.key == pygame.K_w: move_up_prey = True
+                elif event.key == pygame.K_s: move_down_prey = True
+
+            # DEPREDADOR: Solo una dirección a la vez
+            if event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+                move_up_predator = move_down_predator = move_left_predator = move_right_predator = False
+                if event.key == pygame.K_LEFT: move_left_predator = True
+                elif event.key == pygame.K_RIGHT: move_right_predator = True
+                elif event.key == pygame.K_UP: move_up_predator = True
+                elif event.key == pygame.K_DOWN: move_down_predator = True
+
+            # Reinicio del juego
             if event.key == pygame.K_r and game_over:
                 world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
-                predator1.prey_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 game_over = False
+
+        
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a: move_left_prey = False
             if event.key == pygame.K_d: move_right_prey = False
