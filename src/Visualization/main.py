@@ -105,13 +105,14 @@ def create_game():
 
     state_matrix = [[0 for _ in range(10)] for _ in range(10)]
     agent_matrix = np.zeros_like(state_matrix)
+    smell_matrix = [[0 for _ in range(10)] for _ in range(10)]
 
     update_state_matrix_from_world(world_data, state_matrix)
     agent_matrix[9][0] = 1  # Prey
     agent_matrix[0][9] = 2  # Predator
     prey1 = Prey(25, 475, animation_prey)
     predator1 = Predator(475, 25, animation_predator)
-    return world_data, collision_rects, maze, state_matrix, agent_matrix , prey1, predator1
+    return world_data, collision_rects, maze, state_matrix, agent_matrix , prey1, predator1, smell_matrix
 
 def update_state_matrix_from_world(world_data, state_matrix):
     for y in range(len(world_data)):
@@ -155,6 +156,12 @@ def print_agent_matrix(agent_matrix):
         print(row)
     print("-" * 40)
 
+def print_smell_matrix(smell_matrix):
+    print("Matriz de olor:")
+    for row in smell_matrix:
+        print(row)
+    print("-" * 40)
+    
 def draw_grid():
     for x in range(10):
         pygame.draw.line(window, (203, 50, 52), (x * constant_variables.tile_size, 0),
@@ -169,7 +176,7 @@ def check_collision(agent_rect, collision_rects):
     return False
 
 # Initialize game
-world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
+world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1, smell_matrix = create_game()
 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
 
@@ -190,6 +197,7 @@ game_over = False
 ###################################################
 print_state_matrix(state_matrix)
 print_agent_matrix(agent_matrix)
+print_smell_matrix(smell_matrix)
 ###################################################
 
 while run:
@@ -197,6 +205,14 @@ while run:
     window.fill(constant_variables.color_back)
     draw_grid()
     
+    constant_variables.smell_evaporation_counter += 1
+    if constant_variables.smell_evaporation_counter >= constant_variables.smell_evaporation_interval:
+        for y in range(10):
+            for x in range(10):
+                if smell_matrix[y][x] > 0:
+                    smell_matrix[y][x] -= 1
+        constant_variables.smell_evaporation_counter = 0
+        
     # Draw maze
     maze.draw(window)
 
@@ -214,12 +230,14 @@ while run:
         # Move prey
         if not check_collision(prey1.hitbox().move(delta_x_prey, delta_y_prey), collision_rects): #Not move in collisions
             prey1.movement(delta_x_prey, delta_y_prey)
+            smell_matrix[prey1.new_state_y][prey1.new_state_x] = constant_variables.smell_initial_strength
             if delta_x_prey != 0 or delta_y_prey != 0:
                 update_agent_matrix(agent_matrix, prey1.old_state_x, prey1.old_state_y, prey1.new_state_x, prey1.new_state_y)
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 print_state_matrix(state_matrix)
                 print_agent_matrix(agent_matrix)
+                print_smell_matrix(smell_matrix)
                 
         # Move predator 
         collision_x, collision_y = delta_x_predator, delta_y_predator 
@@ -260,6 +278,7 @@ while run:
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
+                        print_smell_matrix(smell_matrix)
                         
                     
                     else:
@@ -271,6 +290,7 @@ while run:
                         print("[Collision]?", collision)
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
+                        print_smell_matrix(smell_matrix)
 
 
                     elif distance == 25:
@@ -281,6 +301,7 @@ while run:
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
+                        print_smell_matrix(smell_matrix)
 
                     elif distance == 50:
                         
@@ -300,6 +321,7 @@ while run:
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
+                            print_smell_matrix(smell_matrix)
                             
                         if predator1.adjusting and collision_y != 0 and predator1.shape.y%50!=0: 
                             predator1.adjust_movement_collision(collision_x, collision_y, distance)
@@ -309,6 +331,7 @@ while run:
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
+                            print_smell_matrix(smell_matrix)
 
                         if not predator1.adjusting and predator1.shape.y%50==0 and predator1.shape.x%50==0 :
                             predator1.adjust_movement_collision(collision_x, collision_y, distance)
@@ -318,6 +341,7 @@ while run:
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
+                            print_smell_matrix(smell_matrix)
 
                     else:
                         print("Debug")
@@ -327,6 +351,7 @@ while run:
                     print("[Collision border]?", collision_border)
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
+                    print_smell_matrix(smell_matrix)
 
                 elif distance_border == 25:
                     predator1.adjust_movement_collision(collision_x, collision_y, distance_border)
@@ -337,6 +362,7 @@ while run:
 
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
+                    print_smell_matrix(smell_matrix)
 
                 elif distance_border == 50:
 
@@ -347,6 +373,7 @@ while run:
                     predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
+                    print_smell_matrix(smell_matrix)
                 else:
                     print("Debug")
                     
@@ -360,7 +387,13 @@ while run:
         prey_y = prey1.hitbox().y // constant_variables.tile_size
         if 0 <= prey_x < 10 and 0 <= prey_y < 10:
             if world_data[prey_y][prey_x] == 11:
-                game_over = True
+                evasion_probability = prey1.calculate_evasion_probability()
+                if random.random() > evasion_probability:
+                    print(f"La presa cayó en la trampa. Probabilidad de evadir: {evasion_probability:.2f}")
+                    game_over = True
+                else:
+                    print(f"La presa EVADIÓ la trampa. Probabilidad de evadir: {evasion_probability:.2f}")
+
 
     # Draw agents
     prey1.update()
@@ -398,7 +431,7 @@ while run:
 
             # Reinicio del juego
             if event.key == pygame.K_r and game_over:
-                world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1 = create_game()
+                world_data, collision_rects, maze, state_matrix, agent_matrix, prey1, predator1, smell_matrix = create_game()
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 game_over = False

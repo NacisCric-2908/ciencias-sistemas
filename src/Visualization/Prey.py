@@ -1,9 +1,12 @@
 from Agent import Agent
 import constant_variables
+import math
+import pygame
 
 class Prey(Agent):
     def __init__(self, x, y, animation):
         super().__init__(x, y, animation)  # Call the parent constructor
+        self.start_time = pygame.time.get_ticks()
 
    #Change the coordinates for movement
     def movement(self, delta_x, delta_y ): #Deltas can be (Up, -50) (Down, 50) (Left, 50) (Right, -50)
@@ -79,3 +82,13 @@ class Prey(Agent):
                 else:
                     print(f"Prey: Out of maze at [{nx}, {ny}]")
                     break
+
+    def calculate_evasion_probability(self):
+            elapsed_ms = pygame.time.get_ticks() - self.start_time
+            t = elapsed_ms / 1000  # Convertir a segundos
+
+            P_base = constant_variables.prey_evasion_base
+            B = constant_variables.prey_learning_rate
+
+            probability = P_base * (1 - math.exp(-B * t))
+            return probability
