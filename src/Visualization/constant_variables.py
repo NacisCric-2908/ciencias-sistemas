@@ -10,7 +10,7 @@ smell_initial_strength = 5      # Valor de olor que deja la presa
 smell_previous_strength = 4     # Valor para la celda anterior
 smell_evaporation_counter = 0
 prey_evasion_base = 0.7  # P_base
-prey_learning_rate = 0.05  # B
+prey_learning_rate = 0.2  # B
 
 
 #Predator Variables

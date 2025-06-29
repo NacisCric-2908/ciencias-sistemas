@@ -1,5 +1,6 @@
 from Agent import Agent
 import constant_variables
+import math
 
 class Predator(Agent):
     def __init__(self, x, y, animation):
@@ -605,3 +606,49 @@ class Predator(Agent):
             return True, best_distance, best_direction
         return False, min_distance, "any"
 
+
+
+    def smell(self, smell_matrix):
+        y0, x0 = self.new_state_y, self.new_state_x  # posición del zorro
+        rows, cols = 10, 10
+
+        max_intensity = 0
+        coordinate = None
+        distance = None
+
+        for dy in range(-4, 5):
+            for dx in range(-4, 5):
+                ny, nx = y0 + dy, x0 + dx
+
+                if 0 <= ny < rows and 0 <= nx < cols:
+                    intensity = smell_matrix[ny][nx]
+                    if intensity != 0:
+                        # Coordenadas reales (en pixeles)
+                        x_real = nx * 50
+                        y_real = ny * 50
+                        x0_real = x0 * 50
+                        y0_real = y0 * 50
+
+                        # Distancia Euclidiana real
+                        normal_distance = math.sqrt((x_real - x0_real) ** 2 + (y_real - y0_real) ** 2)
+
+                        # Intensidad percibida
+                        value = 300 - (normal_distance / intensity)
+
+                        if value > max_intensity:
+                            max_intensity = value
+                            coordinate = (nx, ny)
+                            distance = normal_distance
+
+        if coordinate is not None:
+            print(f"Máxima intensidad: {max_intensity:.2f}, Coordenada: {coordinate}, Distancia real: {distance:.2f}")
+            
+            if max_intensity >= 270.0:
+                self.hunting = True
+                return coordinate, max_intensity, distance
+            else:
+                return coordinate, max_intensity, distance
+        else:
+                return coordinate, max_intensity, distance
+
+        return max_intensity

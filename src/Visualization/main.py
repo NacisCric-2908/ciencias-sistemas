@@ -205,6 +205,7 @@ while run:
     window.fill(constant_variables.color_back)
     draw_grid()
     
+    # Smell agregar ------
     constant_variables.smell_evaporation_counter += 1
     if constant_variables.smell_evaporation_counter >= constant_variables.smell_evaporation_interval:
         for y in range(10):
@@ -212,7 +213,8 @@ while run:
                 if smell_matrix[y][x] > 0:
                     smell_matrix[y][x] -= 1
         constant_variables.smell_evaporation_counter = 0
-        
+    #-------------------------    
+
     # Draw maze
     maze.draw(window)
 
@@ -231,10 +233,12 @@ while run:
         if not check_collision(prey1.hitbox().move(delta_x_prey, delta_y_prey), collision_rects): #Not move in collisions
             prey1.movement(delta_x_prey, delta_y_prey)
             smell_matrix[prey1.new_state_y][prey1.new_state_x] = constant_variables.smell_initial_strength
+           
             if delta_x_prey != 0 or delta_y_prey != 0:
                 update_agent_matrix(agent_matrix, prey1.old_state_x, prey1.old_state_y, prey1.new_state_x, prey1.new_state_y)
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                predator1.smell(smell_matrix)
                 print_state_matrix(state_matrix)
                 print_agent_matrix(agent_matrix)
                 print_smell_matrix(smell_matrix)
@@ -276,6 +280,7 @@ while run:
 
                         prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                        predator1.smell(smell_matrix)
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
                         print_smell_matrix(smell_matrix)
@@ -299,6 +304,7 @@ while run:
                         predator1.transition_normal_fast()
                         prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                        predator1.smell(smell_matrix)
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
                         print_smell_matrix(smell_matrix)
@@ -319,6 +325,7 @@ while run:
                             predator1.transition_normal_fast()
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            predator1.smell(smell_matrix)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -329,6 +336,7 @@ while run:
                             predator1.transition_normal_fast()
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            predator1.smell(smell_matrix)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -339,6 +347,7 @@ while run:
                             predator1.transition_normal_fast()
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                            predator1.smell(smell_matrix)
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -359,7 +368,8 @@ while run:
                     predator1.transition_normal_fast()
                     prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                     predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
-
+                    predator1.smell(smell_matrix)   
+                    
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
                     print_smell_matrix(smell_matrix)
@@ -371,6 +381,7 @@ while run:
                     predator1.transition_normal_fast()
                     prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                     predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
+                    predator1.smell(smell_matrix)
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
                     print_smell_matrix(smell_matrix)
@@ -382,6 +393,8 @@ while run:
         if prey1.hitbox().colliderect(predator1.hitbox()):
             game_over = True
 
+
+        #Agregar smell, todo este pedazito
         # Check collision with traps
         prey_x = prey1.hitbox().x // constant_variables.tile_size
         prey_y = prey1.hitbox().y // constant_variables.tile_size
