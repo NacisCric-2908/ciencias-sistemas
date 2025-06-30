@@ -6,6 +6,8 @@ from Prey import Prey
 from Predator import Predator
 import numpy as np
 import random
+import csv
+import os
 
 # Start the game
 pygame.init()
@@ -51,6 +53,25 @@ initial_world_data = [
     [10, 9, 8, 9, 10, 9, 10, 8, 10, 11]
 ]
 
+# agregar
+def flatten_matrix(matrix, prefix):
+    """Convierte una matriz 10x10 en un diccionario con claves prefijadas."""
+    flattened = {}
+    for y in range(10):
+        for x in range(10):
+            flattened[f"{prefix}_{y}_{x}"] = matrix[y][x]
+    return flattened
+
+# agregar
+def save_to_csv(data, filename="game_data.csv"):
+    """Guarda los datos en un archivo CSV."""
+    file_exists = os.path.isfile(filename)
+    with open(filename, mode='a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=data.keys())
+        if not file_exists:
+            writer.writeheader()  # Solo escribe el encabezado si el archivo no existe
+        writer.writerow(data)
+        
 def randomize_traps(world_data):
     trap_positions = []
     path_positions = []
@@ -235,6 +256,33 @@ while run:
             smell_matrix[prey1.new_state_y][prey1.new_state_x] = constant_variables.smell_initial_strength
            
             if delta_x_prey != 0 or delta_y_prey != 0:
+                 # agregar
+                constant_variables.move_count += 1
+                if constant_variables.move_count >= constant_variables.max_moves:
+                    game_over = True
+                    constant_variables.moveout = True
+                    constant_variables.prey_captured = False
+
+                if prey1.hitbox().colliderect(predator1.hitbox()):
+                    game_over = True
+                    constant_variables.prey_captured = True
+                    constant_variables.timeout = False
+    
+                data = {
+                **flatten_matrix(state_matrix, "state"),
+                **flatten_matrix(agent_matrix, "agent"),
+                **flatten_matrix(smell_matrix, "smell"),
+                "hunting": predator1.hunting,
+                "prey_x": prey1.new_state_x,
+                "prey_y": prey1.new_state_y,
+                "predator_x": predator1.new_state_x,
+                "predator_y": predator1.new_state_y,
+                "game_over": game_over,
+                "prey_captured": constant_variables.prey_captured if game_over else False,  
+                "timeout": constant_variables.moveout if game_over else False,             
+                }
+                save_to_csv(data)
+            #--------------------------------------------    
                 update_agent_matrix(agent_matrix, prey1.old_state_x, prey1.old_state_y, prey1.new_state_x, prey1.new_state_y)
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
@@ -247,6 +295,34 @@ while run:
         collision_x, collision_y = delta_x_predator, delta_y_predator 
 
         if delta_x_predator != 0 or delta_y_predator != 0: #Only moves (50,0)(-50,0)(0,-50)(0,50)
+            # agregar
+            constant_variables.move_count += 1
+            
+            if constant_variables.move_count >= constant_variables.max_moves:
+                game_over = True
+                constant_variables.moveout = True
+                constant_variables.prey_captured = False
+                
+            if prey1.hitbox().colliderect(predator1.hitbox()):
+                game_over = True
+                constant_variables.prey_captured = True
+                constant_variables.timeout = False
+                
+            data = {
+                **flatten_matrix(state_matrix, "state"),
+                **flatten_matrix(agent_matrix, "agent"),
+                **flatten_matrix(smell_matrix, "smell"),
+                "hunting": predator1.hunting,
+                "prey_x": prey1.new_state_x,
+                "prey_y": prey1.new_state_y,
+                "predator_x": predator1.new_state_x,
+                "predator_y": predator1.new_state_y,
+                "game_over": game_over,
+                "prey_captured": constant_variables.prey_captured if game_over else False,  # Solo relevante si game_over=True
+                "timeout": constant_variables.moveout if game_over else False,             # Solo relevante si game_over=True
+                }
+            save_to_csv(data)
+            # ---------------------------------------------------------------
             if predator1.hunting: #If hunting the move is + 25, moves (75,0)(-75,0)(0,-75)(0,75)
                 if delta_x_predator > delta_y_predator and delta_y_predator == 0: #Move right
                     collision_x = delta_x_predator + constant_variables.speed_increase
@@ -404,10 +480,26 @@ while run:
                 if random.random() > evasion_probability:
                     print(f"La presa cayó en la trampa. Probabilidad de evadir: {evasion_probability:.2f}")
                     game_over = True
+                     # agregar
+                    constant_variables.prey_captured = True 
+                    data = {
+                            **flatten_matrix(state_matrix, "state"),
+                            **flatten_matrix(agent_matrix, "agent"),
+                            **flatten_matrix(smell_matrix, "smell"),
+                            "hunting": predator1.hunting,
+                            "prey_x": prey1.new_state_x,
+                            "prey_y": prey1.new_state_y,
+                            "predator_x": predator1.new_state_x,
+                            "predator_y": predator1.new_state_y,
+                            "game_over": game_over,
+                            "prey_captured": constant_variables.prey_captured if game_over else False,
+                            "timeout": constant_variables.timeout if game_over else False,
+                        }
+                    save_to_csv(data)
+                # ---------------------------------------------------------------------------------------------
                 else:
                     print(f"La presa EVADIÓ la trampa. Probabilidad de evadir: {evasion_probability:.2f}")
-
-
+     
     # Draw agents
     prey1.update()
     predator1.update()
@@ -418,7 +510,12 @@ while run:
         font = pygame.font.SysFont(None, 48)
         text = font.render("¡Has perdido! Presiona R", True, (255, 0, 0))
         window.blit(text, (50, constant_variables.height_windows // 2 - 20))
-
+         # agregar
+        constant_variables.move_count = 0
+        constant_variables.prey_captured = False
+        constant_variables.timeout = False
+        #-----------------------
+        
     # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

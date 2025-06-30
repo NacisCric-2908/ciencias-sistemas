@@ -1,3 +1,3 @@
-print("hola mundo")
-print("hola mundo 222222")
-print("hola mundo 333333")
+import pandas as pd
+df = pd.read_csv("game_data.csv")
+print(df.head())
