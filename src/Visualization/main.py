@@ -287,6 +287,7 @@ while run:
                 prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                 predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                 predator1.smell(smell_matrix)
+                predator1.should_hunt()  # Check if predator should hunt based on ML model
                 print_state_matrix(state_matrix)
                 print_agent_matrix(agent_matrix)
                 print_smell_matrix(smell_matrix)
@@ -357,6 +358,7 @@ while run:
                         prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                         predator1.smell(smell_matrix)
+                        predator1.should_hunt()  # Check if predator should hunt based on ML model
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
                         print_smell_matrix(smell_matrix)
@@ -381,6 +383,7 @@ while run:
                         prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                         predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                         predator1.smell(smell_matrix)
+                        predator1.should_hunt()  # Check if predator should hunt based on ML model
                         print_state_matrix(state_matrix)
                         print_agent_matrix(agent_matrix)
                         print_smell_matrix(smell_matrix)
@@ -402,6 +405,7 @@ while run:
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             predator1.smell(smell_matrix)
+                            predator1.should_hunt()  # Check if predator should hunt based on ML model
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -413,6 +417,7 @@ while run:
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             predator1.smell(smell_matrix)
+                            predator1.should_hunt()  # Check if predator should hunt based on ML model
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -424,6 +429,7 @@ while run:
                             prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                             predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                             predator1.smell(smell_matrix)
+                            predator1.should_hunt()  # Check if predator should hunt based on ML model
                             print_state_matrix(state_matrix)
                             print_agent_matrix(agent_matrix)
                             print_smell_matrix(smell_matrix)
@@ -445,6 +451,7 @@ while run:
                     prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                     predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                     predator1.smell(smell_matrix)   
+                    predator1.should_hunt()  # Check if predator should hunt based on ML model
                     
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
@@ -458,6 +465,7 @@ while run:
                     prey1.prey_sensor(state_matrix, agent_matrix, prey1.new_state_x, prey1.new_state_y)
                     predator1.activate_sensor(state_matrix, agent_matrix, predator1.new_state_x, predator1.new_state_y)
                     predator1.smell(smell_matrix)
+                    predator1.should_hunt()  # Check if predator should hunt based on ML model
                     print_state_matrix(state_matrix)
                     print_agent_matrix(agent_matrix)
                     print_smell_matrix(smell_matrix)

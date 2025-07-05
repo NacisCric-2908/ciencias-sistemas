@@ -1,14 +1,24 @@
 from Agent import Agent
 import constant_variables
 import math
+import pickle
+import xgboost as xgb
+
 
 class Predator(Agent):
     def __init__(self, x, y, animation):
         super().__init__(x, y, animation)
         self.hunting = False
         self.adjusting = False
+        self.seen_prey = False
+        self.smell_intensity = 0.0
         self.move = True
 
+        #ML model will take the decision of hunting or not.
+        self.hunting_predictor = None
+        with open('src/Visualization/hunting_ML/hunting_model.pkl', 'rb') as f:
+            self.hunting_predictor = pickle.load(f)
+        
         #When predator is hunting, the movement apply two states in state matrix. 
         self.hunt1_old_state_x = self.new_state_x
         self.hunt1_old_state_y = self.new_state_y
@@ -133,7 +143,7 @@ class Predator(Agent):
         }
 
         if not self.hunting:
-            self.hunting = False 
+            self.seen_prey = False 
             print(grid_maze[y][x])
 
             for direction_name, (dx, dy) in directions.items():
@@ -151,7 +161,7 @@ class Predator(Agent):
                             if grid_agents[ny][nx] == 1:
                                 print(f"Predator: There is a prey at [{nx}, {ny}]")
                                 if direction_name in ["up", "down", "left", "right"]:
-                                    self.hunting = True
+                                    self.seen_prey = True
                                     self.transition_normal_fast()
                                     self.hunting_direction = direction_name
                                 break
@@ -161,7 +171,7 @@ class Predator(Agent):
                             if grid_agents[ny][nx] == 1:
                                 print(f"Predator: There is a Prey over trap at [{nx}, {ny}]")
                                 if direction_name in ["up", "down", "left", "right"]:
-                                    self.hunting = True
+                                    self.seen_prey = True
                                     self.hunting_direction = direction_name
                                 break
                             continue
@@ -235,11 +245,11 @@ class Predator(Agent):
                         break
 
             if not detect_prey:
-                self.hunting = False
+                self.seen_prey = False
                 print("Predator: No prey in sight — switching to normal sensor")
                 return
             else:
-                self.hunting = True
+                self.seen_prey = True
                 print("Continue mode hunting")
                 return
 
@@ -371,14 +381,14 @@ class Predator(Agent):
                     break
 
         if not detect_prey:
-                self.hunting = False
+                self.seen_prey = False
                 self.adjusting = True
                 print("Predator: No prey in sight — switching to normal sensor")
                 return
         else:
-                self.hunting = True
+                self.seen_prey = True
                 self.adjusting = False
-                print("Continue mode hunting")
+                print("Sees the prey, can continue hunting")
                 return
 
     
@@ -566,7 +576,7 @@ class Predator(Agent):
 
 
     def check_border_collision(self, prev_agent_rect, agent_rect):
-        map_limit = 500  # Tamaño total del mapa: 10x10 casillas de 50px
+        map_limit = 500  
         min_distance = 75
         best_distance = float('inf')
         best_direction = 'none'
@@ -574,28 +584,24 @@ class Predator(Agent):
         dx = agent_rect.x - prev_agent_rect.x
         dy = agent_rect.y - prev_agent_rect.y
 
-        # Izquierda
         if agent_rect.left < 0 and dx < 0:
             direction = 'left'
-            distance = prev_agent_rect.left  # Lo que logró avanzar antes de pegar con el borde
+            distance = prev_agent_rect.left  
             best_distance = distance
             best_direction = direction
 
-        # Derecha
         elif agent_rect.right > map_limit and dx > 0:
             direction = 'right'
             distance = map_limit - prev_agent_rect.right
             best_distance = distance
             best_direction = direction
 
-        # Arriba
         elif agent_rect.top < 0 and dy < 0:
             direction = 'up'
             distance = prev_agent_rect.top
             best_distance = distance
             best_direction = direction
 
-        # Abajo
         elif agent_rect.bottom > map_limit and dy > 0:
             direction = 'down'
             distance = map_limit - prev_agent_rect.bottom
@@ -609,12 +615,12 @@ class Predator(Agent):
 
 
     def smell(self, smell_matrix):
-        y0, x0 = self.new_state_y, self.new_state_x  # posición del zorro
+        y0, x0 = self.new_state_y, self.new_state_x 
         rows, cols = 10, 10
 
-        max_intensity = 0
+        max_intensity = 0.0
         coordinate = None
-        distance = None
+        distance = 0.0
 
         for dy in range(-4, 5):
             for dx in range(-4, 5):
@@ -623,16 +629,13 @@ class Predator(Agent):
                 if 0 <= ny < rows and 0 <= nx < cols:
                     intensity = smell_matrix[ny][nx]
                     if intensity != 0:
-                        # Coordenadas reales (en pixeles)
                         x_real = nx * 50
                         y_real = ny * 50
                         x0_real = x0 * 50
                         y0_real = y0 * 50
 
-                        # Distancia Euclidiana real
                         normal_distance = math.sqrt((x_real - x0_real) ** 2 + (y_real - y0_real) ** 2)
 
-                        # Intensidad percibida
                         value = 300 - (normal_distance / intensity)
 
                         if value > max_intensity:
@@ -641,14 +644,16 @@ class Predator(Agent):
                             distance = normal_distance
 
         if coordinate is not None:
-            print(f"Máxima intensidad: {max_intensity:.2f}, Coordenada: {coordinate}, Distancia real: {distance:.2f}")
-            
-            if max_intensity >= 270.0:
-                self.hunting = True
-                return coordinate, max_intensity, distance
-            else:
-                return coordinate, max_intensity, distance
+            print(f"Max Intensity: {max_intensity:.2f}, Coordinates: {coordinate}, Distance: {distance:.2f}")
         else:
-                return coordinate, max_intensity, distance
+            print("Not smell nothing.")
 
-        return max_intensity
+        self.smell_intensity = max_intensity
+        return coordinate, max_intensity, distance
+
+    def should_hunt(self):
+        print(self.smell_intensity)
+        print(self.seen_prey)
+        input_data = [[self.smell_intensity, self.seen_prey]]
+        self.hunting = self.hunting_predictor.predict(input_data)[0] == 1
+        print("Hunting mode: ", self.hunting)
