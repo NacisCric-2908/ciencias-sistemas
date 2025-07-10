@@ -245,10 +245,9 @@ class PreyPredatorEnv(ParallelEnv):
             terminations["prey"] = True
             terminations["predator"] = True
         else:
-            #  rewards["prey"] += 0.1
+            rewards["prey"] += 0.1
             if self.prey.old_state_x == self.prey.new_state_x and self.prey.old_state_y == self.prey.new_state_y:
                 rewards["prey"] -= 0.5
-            rewards["predator"] -= 0.05
             rewards["predator"] += self.calculate_predator_dense_rewards()
 
         # WHen a prey is over a trap
@@ -276,9 +275,6 @@ class PreyPredatorEnv(ParallelEnv):
         self.current_step += 1
         if self.current_step >= constant_variables.max_moves:
             truncations = {agent: True for agent in self.agents}
-            if not terminations["prey"]:
-                rewards["prey"] += 10.0
-                rewards["predator"] -= 5.0
 
         return observations, rewards, terminations, truncations, infos
 
@@ -315,8 +311,9 @@ class PreyPredatorEnv(ParallelEnv):
 
 
     def calculate_predator_dense_rewards(self):
-        reward = 0
+        reward = 0.0
 
+        #Predator position
         if self.predator.hunting:
             pred_x = self.predator.hunt1_new_state_x
             pred_y = self.predator.hunt1_new_state_y
@@ -328,9 +325,10 @@ class PreyPredatorEnv(ParallelEnv):
             pred_old_x = self.predator.old_state_x
             pred_old_y = self.predator.old_state_y
 
+        # === Penalize by stand still ===
         if pred_x == pred_old_x and pred_y == pred_old_y:
-            reward -= 0.1
-        
+            reward -= 0.05  # If dont move
+        #If seen the prey
         if self.predator.seen_prey:
             prey_x = self.prey.new_state_x
             prey_y = self.prey.new_state_y
@@ -339,12 +337,16 @@ class PreyPredatorEnv(ParallelEnv):
             dist_before = math.hypot(prey_x - pred_old_x, prey_y - pred_old_y)
 
             delta = dist_before - dist_now
+
             if delta > 0:
-                reward += delta * 0.5
+                reward += 0.1  # Is closer
             elif delta < 0:
-                reward += delta * 0.2  # penalización leve si se aleja
+                reward -= 0.05  # Is farther
+
+        # === If doesn't see ===
         else:
-            reward += 0.1  # recompensa leve si se acerca
+            if pred_x != pred_old_x or pred_y != pred_old_y:
+                reward += 0.05  # But is exploring
         
         return reward
         

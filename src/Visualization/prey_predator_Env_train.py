@@ -60,7 +60,7 @@ config = {
     "rollout_fragment_length": 200,
     "log_level": "ERROR",
     "model": {
-        "fcnet_hiddens": [64, 64],
+        "fcnet_hiddens": [128, 128, 64],
         "fcnet_activation": "relu",
     },
     "tf_session_args": {
