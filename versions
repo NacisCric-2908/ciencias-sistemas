@@ -1,0 +1,14 @@
+Version python 3.10.12
+
+Some PIP and versions for use: 
+pip install "ray[rllib]"==2.9.3
+pip install pettingzoo==1.23.1
+pip install gymnasium==0.29.1
+pip install pygame==2.5.2
+pip install matplotlib==3.8.4
+pip install pandas==2.2.2
+pip install xgboost
+pip install numpy==1.24.4
+pip install torch
+pip install supersuit==3.9.0
+pip install pyarrow==14.0.1 --force-reinstall
