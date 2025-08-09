@@ -1,7 +1,6 @@
 # Ignorar carpetas completas
 rl_env/
-jsons/
-MAPPO_Model_RL/
+
 
 # Archivos temporales de Python
 __pycache__/
