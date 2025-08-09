@@ -1,0 +1,6 @@
+After realizing changes in the final model. Getting the performance expected. 
+Predator learnt to hunt the prey, and prey learnt to escape. 
+
+In a large time, the predator dominate the simulation and es visible the converge that got both agents.
+
+Next graphics show the behavior in a increase number of iterations

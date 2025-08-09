@@ -1,0 +1,18 @@
+# Ignorar carpetas completas
+rl_env/
+jsons/
+MAPPO_Model_RL/
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Configuración local
+.vscode/
+.idea/
